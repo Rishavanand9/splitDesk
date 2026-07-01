@@ -1,0 +1,39 @@
+services:
+
+  # ── C# API ──────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: splitdesk-api
+    ports:
+      - "8090:8082"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8082
+      - TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ── React Frontend (nginx serves SPA + proxies /api/ to API container) ───────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: splitdesk-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+# ── Usage ────────────────────────────────────────────────────────────────────
+# Build and start:   docker compose up --build
+# Stop:              docker compose down
+# Full clean:        docker compose down --rmi all --volumes
+# View logs:         docker compose logs -f
+# Open app:          http://localhost:3000

@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- xUnit: test framework (replaces NUnit) -->
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+
+    <!-- Moq: mocking library — lets us fake IBillRepository in tests -->
+    <PackageReference Include="Moq" Version="4.20.72" />
+
+    <!-- Coverlet: code coverage — run with "dotnet test" and the XPlat Code Coverage collector -->
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+
+    <!-- FluentAssertions: more readable assertions than Assert.Equal -->
+    <PackageReference Include="FluentAssertions" Version="6.12.2" />
+
+    <!-- Microsoft test SDK boilerplate required by xUnit runner -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference the API project so tests can use its classes -->
+    <ProjectReference Include="..\SplitDesk.Api\SplitDesk.Api.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+# .NET
+bin/
+obj/
+
+# Node
+node_modules/
+dist/
+
+# Editor/OS
+.vs/
+.vscode/
+*.user
+.DS_Store
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*

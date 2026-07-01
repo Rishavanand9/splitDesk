@@ -1,0 +1,126 @@
+import { useState } from 'react';
+import PeopleInput from './PeopleInput';
+import ItemInput from './ItemInput';
+import ScanUpload from './ScanUpload';
+
+export default function BillForm({ onSubmit, loading }) {
+  const [title, setTitle]         = useState('');
+  const [taxPercent, setTaxPercent] = useState('');
+  const [tipPercent, setTipPercent] = useState('');
+  const [people, setPeople]       = useState([]);
+  const [items, setItems]         = useState([]);
+
+  function addPerson(name) { setPeople((prev) => [...prev, name]); }
+
+  function removePerson(index) {
+    const removed = people[index];
+    setPeople((prev) => prev.filter((_, i) => i !== index));
+    setItems((prev) => prev.map((item) => ({
+      ...item,
+      consumers: item.consumers.filter((c) => c !== removed),
+    })));
+  }
+
+  function addItem(item) { setItems((prev) => [...prev, item]); }
+
+  // Called by ScanUpload when OCR finishes — pre-fills detected values
+  function handleScanComplete(scanResult) {
+    if (scanResult.items?.length)    setItems(scanResult.items);
+    if (scanResult.taxPercent != null) setTaxPercent(String(scanResult.taxPercent));
+    if (scanResult.tipPercent != null) setTipPercent(String(scanResult.tipPercent));
+  }
+
+  const canSubmit = title.trim() && people.length > 0 && items.length > 0 && !loading;
+
+  function handleCalculate() {
+    onSubmit({
+      title,
+      taxPercent: parseFloat(taxPercent) || 0,
+      tipPercent: parseFloat(tipPercent) || 0,
+      people,
+      items,
+    });
+  }
+
+  return (
+    <div>
+      {/* Bill details */}
+      <div className="card">
+        <div className="card-title">Bill details</div>
+
+        <div className="field">
+          <input
+            type="text"
+            placeholder=" "
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <label>Bill title (e.g. Dinner at Nando's)</label>
+        </div>
+
+        <div className="field-row">
+          <div className="field">
+            <input
+              type="number"
+              placeholder=" "
+              value={taxPercent}
+              min="0"
+              max="100"
+              step="0.1"
+              onChange={(e) => setTaxPercent(e.target.value)}
+              className={taxPercent !== '' ? 'has-value' : ''}
+            />
+            <label>Tax %</label>
+          </div>
+          <div className="field">
+            <input
+              type="number"
+              placeholder=" "
+              value={tipPercent}
+              min="0"
+              max="100"
+              step="0.1"
+              onChange={(e) => setTipPercent(e.target.value)}
+              className={tipPercent !== '' ? 'has-value' : ''}
+            />
+            <label>Tip %</label>
+          </div>
+        </div>
+      </div>
+
+      {/* Bill scan */}
+      <ScanUpload onScanComplete={handleScanComplete} />
+
+      {/* People */}
+      <PeopleInput people={people} onAdd={addPerson} onRemove={removePerson} />
+
+      {/* Items */}
+      <ItemInput people={people} onAdd={addItem} />
+
+      {/* Items summary */}
+      {items.length > 0 && (
+        <div className="card">
+          <div className="card-title">{items.length} item{items.length > 1 ? 's' : ''}</div>
+          <ul className="item-list">
+            {items.map((item, i) => (
+              <li key={i} className="item-row">
+                <div className="item-icon">{item.name.slice(0, 3).toUpperCase()}</div>
+                <div className="item-info">
+                  <div className="item-name">{item.name}</div>
+                  <div className="item-consumers">{item.consumers.join(' · ')}</div>
+                </div>
+                <div className="item-price">£{item.price.toFixed(2)}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="sticky-footer">
+        <button className="btn-primary" onClick={handleCalculate} disabled={!canSubmit}>
+          {loading ? 'Calculating...' : 'Calculate Split'}
+        </button>
+      </div>
+    </div>
+  );
+}
