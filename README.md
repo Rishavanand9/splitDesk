@@ -1,5 +1,7 @@
 # splitDesk
 
+[![Test, build, and deploy](https://github.com/Rishavanand9/splitDesk/actions/workflows/deploy.yml/badge.svg)](https://github.com/Rishavanand9/splitDesk/actions/workflows/deploy.yml)
+
 > Fair bill splitting, item by item — not just an equal split.
 
 splitDesk works out exactly who owes what based on what each person actually consumed, distributes tax and tip proportionally, and tells you who owes whom once one person has fronted the bill. It can also read a receipt photo and pre-fill items automatically via OCR.
@@ -44,6 +46,10 @@ docker compose up --build
 
 - App: http://localhost:3000
 - API: proxied through nginx at `/api/*`
+
+## Deployment
+
+Pushes to `master` are tested, built, and deployed to Fly.io automatically via GitHub Actions. See [docs/deployment-github-actions.md](docs/deployment-github-actions.md) for the one-time setup this requires.
 
 ## Documentation
 

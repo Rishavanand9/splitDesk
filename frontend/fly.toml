@@ -1,0 +1,24 @@
+# Fly.io config for the frontend. The app must exist before this is used —
+# see docs/deployment-github-actions.md for the one-time setup.
+# API_UPSTREAM must match the deployed API app's public URL (splitdesk-api
+# above → splitdesk-api.fly.dev). Update both if you rename either app.
+app = "splitdesk-web"
+primary_region = "bom"
+
+[build]
+
+[env]
+  API_UPSTREAM = "https://splitdesk-api.fly.dev"
+  DNS_RESOLVER = "1.1.1.1"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

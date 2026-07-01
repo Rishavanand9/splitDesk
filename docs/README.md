@@ -16,7 +16,8 @@ splitDesk is a full-stack web application that splits a bill fairly among partic
 | [Engineering Spec](./engineering-spec.md) | Requirements, constraints, acceptance criteria, non-functional requirements |
 | [Architecture Overview](./architecture/overview.md) | High-level component diagram and technology choices |
 | [Data Flow](./architecture/data-flow.md) | Request lifecycle and state flow diagrams |
-| [Deployment Architecture](./architecture/deployment.md) | Azure infrastructure, Terraform topology, CI/CD pipeline |
+| [Deployment Architecture](./architecture/deployment.md) | Azure infrastructure, Terraform topology, CI/CD pipeline (not currently wired up) |
+| [GitHub Actions Deployment](./deployment-github-actions.md) | The actual CI/CD in use — test + build + deploy to Fly.io on push to master |
 | [ADR Index](./adr/README.md) | All Architecture Decision Records |
 
 ---

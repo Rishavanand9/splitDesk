@@ -1,0 +1,27 @@
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # DNS_RESOLVER/API_UPSTREAM are injected via envsubst at container start
+    # (nginx:alpine auto-renders anything in /etc/nginx/templates/*.template).
+    # Locally (Docker Compose) these default to the internal Docker network —
+    # see the Dockerfile ENV defaults. On Fly.io/other hosts where the API is
+    # a separate public service, override both at deploy time.
+    resolver ${DNS_RESOLVER} valid=30s ipv6=off;
+
+    # SPA fallback — serves index.html for any path not matching a real file
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy /api/ to the backend
+    location /api/ {
+        set $upstream ${API_UPSTREAM};
+        proxy_pass $upstream$request_uri;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 60s;
+        client_max_body_size 10M;
+    }
+}

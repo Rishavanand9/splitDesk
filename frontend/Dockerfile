@@ -20,7 +20,12 @@ RUN npm run build
 FROM nginx:alpine AS runtime
 # Copy the built React app into nginx's web root
 COPY --from=build /app/dist /usr/share/nginx/html
-# Custom nginx config to handle React Router (SPA routing)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Templated nginx config — nginx:alpine auto-renders /etc/nginx/templates/*.template
+# via envsubst on startup. Defaults below match Docker Compose's internal network;
+# override API_UPSTREAM/DNS_RESOLVER at deploy time when the API is a separate host.
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+ENV API_UPSTREAM=http://api:8082
+ENV DNS_RESOLVER=127.0.0.11
+ENV NGINX_ENVSUBST_FILTER=API_UPSTREAM|DNS_RESOLVER
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
