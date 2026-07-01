@@ -1,7 +1,7 @@
 # Fly.io config for the unified single-container deploy (root Dockerfile).
 # The app must exist before this is used — see docs/deployment-github-actions.md.
 app = "splitdesk"
-primary_region = "bom"
+primary_region = "sin"
 
 [build]
 
