@@ -2,6 +2,8 @@ export default function SplitResult({ result, onReset }) {
   if (!result) return null;
 
   const settlements = result.settlements ?? [];
+  const breakdown = result.breakdown;
+  const halfTaxPercent = breakdown ? (breakdown.taxPercent / 2).toFixed(1) : null;
 
   return (
     <div>
@@ -16,11 +18,48 @@ export default function SplitResult({ result, onReset }) {
         )}
       </div>
 
+      {breakdown && (
+        <>
+          <div className="settlements-title">How this was calculated</div>
+          <div className="result-body">
+            <div className="breakdown-row">
+              <span>Subtotal</span>
+              <span>₹{breakdown.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="breakdown-row">
+              <span>CGST ({halfTaxPercent}%)</span>
+              <span>₹{breakdown.cgstAmount.toFixed(2)}</span>
+            </div>
+            <div className="breakdown-row">
+              <span>SGST ({halfTaxPercent}%)</span>
+              <span>₹{breakdown.sgstAmount.toFixed(2)}</span>
+            </div>
+            {breakdown.tipAmount > 0 && (
+              <div className="breakdown-row">
+                <span>Tip ({breakdown.tipPercent}%)</span>
+                <span>₹{breakdown.tipAmount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="breakdown-row breakdown-total">
+              <span>Grand Total</span>
+              <span>₹{breakdown.grandTotal.toFixed(2)}</span>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="settlements-title">Per person</div>
       <div className="result-body">
         {result.splits.map((split, i) => (
           <div key={i} className="split-row">
             <div className="split-avatar">{split.personName[0].toUpperCase()}</div>
-            <div className="split-name">{split.personName}</div>
+            <div className="split-info">
+              <div className="split-name">{split.personName}</div>
+              <div className="split-calc">
+                ₹{split.subtotal.toFixed(2)} + ₹{split.taxShare.toFixed(2)} GST
+                {split.tipShare > 0 && ` + ₹${split.tipShare.toFixed(2)} tip`}
+              </div>
+            </div>
             <div className="split-amount">₹{split.amountOwed.toFixed(2)}</div>
           </div>
         ))}

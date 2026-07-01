@@ -36,8 +36,9 @@ public class BillControllerTests
             PaidBy = "Alice"
         };
 
+        var breakdown = new BillBreakdown(10m, 0m, 0m, 0m, 0m, 0m, 0m, 10m);
         var expectedResponse = new BillSplitResponse("Test", 10m,
-            [new PersonSplit("Alice", 10m)], "Alice", []);
+            [new PersonSplit("Alice", 10m, 0m, 0m, 10m)], "Alice", [], breakdown);
 
         // Stub the service — controller tests should not care about calculation logic
         _mockService
@@ -89,9 +90,10 @@ public class BillControllerTests
             PaidBy = "Alice"
         };
 
+        var breakdown = new BillBreakdown(10m, 0m, 0m, 0m, 0m, 0m, 0m, 10m);
         _mockService
             .Setup(s => s.CalculateSplit(It.IsAny<BillRequest>()))
-            .Returns(new BillSplitResponse("Test", 10m, [new PersonSplit("Alice", 10m)], "Alice", []));
+            .Returns(new BillSplitResponse("Test", 10m, [new PersonSplit("Alice", 10m, 0m, 0m, 10m)], "Alice", [], breakdown));
 
         // Act
         _sut.Split(request);

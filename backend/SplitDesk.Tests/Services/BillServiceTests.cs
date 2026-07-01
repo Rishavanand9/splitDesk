@@ -309,4 +309,65 @@ public class BillServiceTests
         // Assert
         result.Settlements.Should().BeEmpty();
     }
+
+    // ── Breakdown ("how this was calculated") ──────────────────────────────
+
+    [Fact]
+    public void CalculateSplit_WithGst_BreakdownSplitsTaxEvenlyIntoCgstAndSgst()
+    {
+        // Arrange — Indian restaurant bill, 5% GST (2.5% CGST + 2.5% SGST)
+        var request = new BillRequest
+        {
+            Title = "GST Bill",
+            TaxPercent = 5,
+            TipPercent = 0,
+            People = ["Alice", "Bob"],
+            Items = [new ItemRequest { Name = "Thali", Price = 400.00m, Consumers = ["Alice", "Bob"] }]
+        };
+
+        // Act
+        var result = _sut.CalculateSplit(request);
+
+        // Assert — 5% of 400 = 20 total tax, split evenly: 10 CGST + 10 SGST
+        result.Breakdown.Subtotal.Should().Be(400.00m);
+        result.Breakdown.TaxPercent.Should().Be(5m);
+        result.Breakdown.TaxAmount.Should().Be(20.00m);
+        result.Breakdown.CgstAmount.Should().Be(10.00m);
+        result.Breakdown.SgstAmount.Should().Be(10.00m);
+        result.Breakdown.GrandTotal.Should().Be(420.00m);
+    }
+
+    [Fact]
+    public void CalculateSplit_PersonSplit_IncludesSubtotalAndTaxShareComponents()
+    {
+        // Arrange — Alice eats 300, Bob eats 100, 10% tax — tax should follow
+        // each person's share of the subtotal, not be split evenly.
+        var request = new BillRequest
+        {
+            Title = "Component Test",
+            TaxPercent = 10,
+            TipPercent = 0,
+            People = ["Alice", "Bob"],
+            Items =
+            [
+                new ItemRequest { Name = "Expensive", Price = 300.00m, Consumers = ["Alice"] },
+                new ItemRequest { Name = "Cheap",     Price = 100.00m, Consumers = ["Bob"]   }
+            ]
+        };
+
+        // Act
+        var result = _sut.CalculateSplit(request);
+
+        // Assert
+        var alice = result.Splits.First(s => s.PersonName == "Alice");
+        alice.Subtotal.Should().Be(300.00m);
+        alice.TaxShare.Should().Be(30.00m);
+        alice.TipShare.Should().Be(0m);
+        alice.AmountOwed.Should().Be(330.00m);
+
+        var bob = result.Splits.First(s => s.PersonName == "Bob");
+        bob.Subtotal.Should().Be(100.00m);
+        bob.TaxShare.Should().Be(10.00m);
+        bob.AmountOwed.Should().Be(110.00m);
+    }
 }

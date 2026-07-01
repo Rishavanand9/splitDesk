@@ -513,8 +513,26 @@ html, body, #root {
   text-transform: uppercase;
   flex-shrink: 0;
 }
-.split-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
+.split-info { flex: 1; min-width: 0; }
+.split-name { font-size: 0.9rem; font-weight: 500; }
+.split-calc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 .split-amount { font-size: 1rem; font-weight: 700; color: var(--green); }
+
+/* ── Bill breakdown ("how this was calculated") ─────────────────────────── */
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-total {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.95rem;
+}
 
 /* ── Error / hint ────────────────────────────────────────────────────────── */
 .error-banner {

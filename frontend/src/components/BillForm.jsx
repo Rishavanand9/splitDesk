@@ -4,9 +4,14 @@ import ItemInput from './ItemInput';
 import ScanUpload from './ScanUpload';
 import PaidBySelect from './PaidBySelect';
 
+// Indian restaurant bills always carry 5% GST (2.5% CGST + 2.5% SGST) —
+// default to it so it's never accidentally left out, while still letting
+// the user override it (e.g. a bill that's already tax-inclusive).
+const DEFAULT_GST_PERCENT = '5';
+
 export default function BillForm({ onSubmit, loading }) {
   const [title, setTitle]         = useState('');
-  const [taxPercent, setTaxPercent] = useState('');
+  const [taxPercent, setTaxPercent] = useState(DEFAULT_GST_PERCENT);
   const [tipPercent, setTipPercent] = useState('');
   const [people, setPeople]       = useState([]);
   const [items, setItems]         = useState([]);
@@ -107,7 +112,7 @@ export default function BillForm({ onSubmit, loading }) {
               onChange={(e) => setTaxPercent(e.target.value)}
               className={taxPercent !== '' ? 'has-value' : ''}
             />
-            <label>Tax %</label>
+            <label>GST % (CGST+SGST)</label>
           </div>
           <div className="field">
             <input
@@ -123,6 +128,7 @@ export default function BillForm({ onSubmit, loading }) {
             <label>Tip %</label>
           </div>
         </div>
+        <p className="hint">Indian restaurant bills carry 5% GST by default &mdash; adjust if yours differs.</p>
       </div>
 
       {/* Bill scan */}

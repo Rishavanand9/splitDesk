@@ -58,10 +58,13 @@ public class BillService : IBillService
             var tipShare = billSubtotal * (request.TipPercent / 100m) * proportion;
 
             // Round to 2dp at output stage only — intermediate values stay precise
+            var roundedSubtotal = Math.Round(personSubtotal, 2, MidpointRounding.AwayFromZero);
+            var roundedTaxShare = Math.Round(taxShare, 2, MidpointRounding.AwayFromZero);
+            var roundedTipShare = Math.Round(tipShare, 2, MidpointRounding.AwayFromZero);
             var amountOwed = Math.Round(personSubtotal + taxShare + tipShare, 2,
                 MidpointRounding.AwayFromZero);
 
-            return new PersonSplit(person, amountOwed);
+            return new PersonSplit(person, roundedSubtotal, roundedTaxShare, roundedTipShare, amountOwed);
         }).ToList();
 
         var totalAmount = Math.Round(splits.Sum(s => s.AmountOwed), 2,
@@ -77,7 +80,22 @@ public class BillService : IBillService
                 .ToList()
             : [];
 
-        var response = new BillSplitResponse(request.Title, totalAmount, splits, request.PaidBy, settlements);
+        // GST is always split evenly between CGST and SGST on an Indian domestic bill.
+        var roundedBillSubtotal = Math.Round(billSubtotal, 2, MidpointRounding.AwayFromZero);
+        var taxAmount = Math.Round(billSubtotal * (request.TaxPercent / 100m), 2, MidpointRounding.AwayFromZero);
+        var tipAmount = Math.Round(billSubtotal * (request.TipPercent / 100m), 2, MidpointRounding.AwayFromZero);
+        var breakdown = new BillBreakdown(
+            Subtotal: roundedBillSubtotal,
+            TaxPercent: request.TaxPercent,
+            TaxAmount: taxAmount,
+            CgstAmount: Math.Round(taxAmount / 2m, 2, MidpointRounding.AwayFromZero),
+            SgstAmount: Math.Round(taxAmount / 2m, 2, MidpointRounding.AwayFromZero),
+            TipPercent: request.TipPercent,
+            TipAmount: tipAmount,
+            GrandTotal: totalAmount
+        );
+
+        var response = new BillSplitResponse(request.Title, totalAmount, splits, request.PaidBy, settlements, breakdown);
 
         _repository.Save(request.Title, response);
 
