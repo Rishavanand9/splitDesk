@@ -67,7 +67,17 @@ public class BillService : IBillService
         var totalAmount = Math.Round(splits.Sum(s => s.AmountOwed), 2,
             MidpointRounding.AwayFromZero);
 
-        var response = new BillSplitResponse(request.Title, totalAmount, splits);
+        // --- Pass 3: work out who owes the payer ---
+        // One person fronted the whole bill, so everyone else just owes that
+        // person their own share. No multi-party netting is needed here.
+        var settlements = request.People.Contains(request.PaidBy)
+            ? splits
+                .Where(s => s.PersonName != request.PaidBy && s.AmountOwed > 0)
+                .Select(s => new Settlement(s.PersonName, request.PaidBy, s.AmountOwed))
+                .ToList()
+            : [];
+
+        var response = new BillSplitResponse(request.Title, totalAmount, splits, request.PaidBy, settlements);
 
         _repository.Save(request.Title, response);
 

@@ -20,6 +20,10 @@ public record BillRequest
 
     [Required, MinLength(1)]
     public List<ItemRequest> Items { get; init; } = [];
+
+    // The person who paid the entire bill upfront — everyone else settles up with them.
+    [Required, MinLength(1)]
+    public string PaidBy { get; init; } = string.Empty;
 }
 
 public record ItemRequest

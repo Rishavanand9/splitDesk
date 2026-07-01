@@ -36,7 +36,7 @@ export default function ItemInput({ people, onAdd }) {
           <label>Item name</label>
         </div>
         <div className="field has-prefix" style={{ flex: 1 }}>
-          <span className="field-prefix">£</span>
+          <span className="field-prefix">₹</span>
           <input
             type="number"
             placeholder=" "

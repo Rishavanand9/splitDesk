@@ -241,4 +241,72 @@ public class BillServiceTests
         var expected = Math.Round(100m + 100m * (taxPercent / 100m), 2, MidpointRounding.AwayFromZero);
         result.Splits.Single().AmountOwed.Should().Be(expected);
     }
+
+    // ── Settlements ("who owes whom") ──────────────────────────────────────
+
+    [Fact]
+    public void CalculateSplit_OnePersonPaid_OthersOweThePayerTheirShare()
+    {
+        // Arrange — Alice paid the bill, so Bob and Charlie owe Alice their shares
+        var request = new BillRequest
+        {
+            Title = "Group Dinner",
+            TaxPercent = 0,
+            TipPercent = 0,
+            People = ["Alice", "Bob", "Charlie"],
+            Items =
+            [
+                new ItemRequest { Name = "Shared Meal", Price = 30.00m, Consumers = ["Alice", "Bob", "Charlie"] }
+            ],
+            PaidBy = "Alice"
+        };
+
+        // Act
+        var result = _sut.CalculateSplit(request);
+
+        // Assert — Alice fronted £30, so Bob and Charlie each owe her £10. Alice owes no one.
+        result.Settlements.Should().HaveCount(2);
+        result.Settlements.Should().ContainSingle(s => s.FromPerson == "Bob" && s.ToPerson == "Alice" && s.Amount == 10.00m);
+        result.Settlements.Should().ContainSingle(s => s.FromPerson == "Charlie" && s.ToPerson == "Alice" && s.Amount == 10.00m);
+        result.Settlements.Should().NotContain(s => s.FromPerson == "Alice");
+    }
+
+    [Fact]
+    public void CalculateSplit_PayerOwesNothingToThemselves()
+    {
+        // Arrange — solo bill, payer is the only person
+        var request = new BillRequest
+        {
+            Title = "Solo",
+            People = ["Alice"],
+            Items = [new ItemRequest { Name = "Coffee", Price = 5m, Consumers = ["Alice"] }],
+            PaidBy = "Alice"
+        };
+
+        // Act
+        var result = _sut.CalculateSplit(request);
+
+        // Assert — nobody else to settle up with
+        result.Settlements.Should().BeEmpty();
+        result.PaidBy.Should().Be("Alice");
+    }
+
+    [Fact]
+    public void CalculateSplit_PersonWithZeroShare_DoesNotOweThePayer()
+    {
+        // Arrange — Bob didn't consume anything, so he owes nothing even though Alice paid
+        var request = new BillRequest
+        {
+            Title = "Uneven",
+            People = ["Alice", "Bob"],
+            Items = [new ItemRequest { Name = "Steak", Price = 20m, Consumers = ["Alice"] }],
+            PaidBy = "Alice"
+        };
+
+        // Act
+        var result = _sut.CalculateSplit(request);
+
+        // Assert
+        result.Settlements.Should().BeEmpty();
+    }
 }

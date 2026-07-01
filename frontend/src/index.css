@@ -161,7 +161,7 @@ html, body, #root {
   gap: 10px;
 }
 
-/* Prefix symbol inside input (for £) */
+/* Prefix symbol inside input (for ₹) */
 .field-prefix {
   position: absolute;
   left: 14px;
@@ -249,6 +249,42 @@ html, body, #root {
   font-family: inherit;
 }
 .chip-remove:hover { opacity: 1; color: var(--red); background: none; }
+
+/* ── Payer chips (selectable, unlike plain person chips) ─────────────────── */
+.payer-chip {
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+.payer-chip:hover { background: #DCE9FF; }
+.payer-chip.selected {
+  background: var(--green-light);
+  color: #148058;
+  border-color: var(--green);
+}
+.payer-chip.selected .avatar { background: var(--green); }
+
+/* ── Settlements ("who owes whom") ───────────────────────────────────────── */
+.settlements-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 20px 0 10px;
+  padding: 0 4px;
+}
+.settlements-title + .result-body { margin-bottom: 12px; }
+.settlement-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.settlement-row:last-child { border-bottom: none; }
+.settlement-text { flex: 1; font-size: 0.88rem; }
+.settlement-text .name { font-weight: 600; }
+.settlement-arrow { color: var(--text-muted); }
+.settlement-amount { font-size: 0.95rem; font-weight: 700; color: var(--red); }
+.settlement-empty { padding: 10px 4px; color: var(--text-muted); font-size: 0.85rem; }
 
 /* ── Consumer toggles ────────────────────────────────────────────────────── */
 .consumers-label {
@@ -436,6 +472,8 @@ html, body, #root {
 }
 .result-bill-title { font-size: 0.82rem; opacity: 0.85; font-weight: 500; }
 .result-total { font-size: 2.2rem; font-weight: 700; margin-top: 4px; letter-spacing: -1px; }
+.result-paid-by { font-size: 0.8rem; opacity: 0.85; margin-top: 6px; }
+.result-paid-by .name { font-weight: 700; }
 
 .result-body {
   background: var(--card);

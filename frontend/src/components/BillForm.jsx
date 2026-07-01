@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PeopleInput from './PeopleInput';
 import ItemInput from './ItemInput';
 import ScanUpload from './ScanUpload';
+import PaidBySelect from './PaidBySelect';
 
 export default function BillForm({ onSubmit, loading }) {
   const [title, setTitle]         = useState('');
@@ -9,6 +10,7 @@ export default function BillForm({ onSubmit, loading }) {
   const [tipPercent, setTipPercent] = useState('');
   const [people, setPeople]       = useState([]);
   const [items, setItems]         = useState([]);
+  const [paidBy, setPaidBy]       = useState('');
 
   function addPerson(name) { setPeople((prev) => [...prev, name]); }
 
@@ -19,6 +21,7 @@ export default function BillForm({ onSubmit, loading }) {
       ...item,
       consumers: item.consumers.filter((c) => c !== removed),
     })));
+    setPaidBy((prev) => (prev === removed ? '' : prev));
   }
 
   function addItem(item) { setItems((prev) => [...prev, item]); }
@@ -30,7 +33,7 @@ export default function BillForm({ onSubmit, loading }) {
     if (scanResult.tipPercent != null) setTipPercent(String(scanResult.tipPercent));
   }
 
-  const canSubmit = title.trim() && people.length > 0 && items.length > 0 && !loading;
+  const canSubmit = title.trim() && people.length > 0 && items.length > 0 && paidBy && !loading;
 
   function handleCalculate() {
     onSubmit({
@@ -39,6 +42,7 @@ export default function BillForm({ onSubmit, loading }) {
       tipPercent: parseFloat(tipPercent) || 0,
       people,
       items,
+      paidBy,
     });
   }
 
@@ -94,6 +98,9 @@ export default function BillForm({ onSubmit, loading }) {
       {/* People */}
       <PeopleInput people={people} onAdd={addPerson} onRemove={removePerson} />
 
+      {/* Who paid */}
+      <PaidBySelect people={people} paidBy={paidBy} onChange={setPaidBy} />
+
       {/* Items */}
       <ItemInput people={people} onAdd={addItem} />
 
@@ -109,7 +116,7 @@ export default function BillForm({ onSubmit, loading }) {
                   <div className="item-name">{item.name}</div>
                   <div className="item-consumers">{item.consumers.join(' · ')}</div>
                 </div>
-                <div className="item-price">£{item.price.toFixed(2)}</div>
+                <div className="item-price">₹{item.price.toFixed(2)}</div>
               </li>
             ))}
           </ul>

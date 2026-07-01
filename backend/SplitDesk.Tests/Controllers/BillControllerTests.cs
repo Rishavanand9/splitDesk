@@ -32,11 +32,12 @@ public class BillControllerTests
             TaxPercent = 0,
             TipPercent = 0,
             People = ["Alice"],
-            Items = [new ItemRequest { Name = "Item", Price = 10m, Consumers = ["Alice"] }]
+            Items = [new ItemRequest { Name = "Item", Price = 10m, Consumers = ["Alice"] }],
+            PaidBy = "Alice"
         };
 
         var expectedResponse = new BillSplitResponse("Test", 10m,
-            [new PersonSplit("Alice", 10m)]);
+            [new PersonSplit("Alice", 10m)], "Alice", []);
 
         // Stub the service — controller tests should not care about calculation logic
         _mockService
@@ -62,7 +63,8 @@ public class BillControllerTests
             TaxPercent = 0,
             TipPercent = 0,
             People = ["Alice", "Bob"],
-            Items = [new ItemRequest { Name = "Item", Price = 10m, Consumers = ["Charlie"] }]
+            Items = [new ItemRequest { Name = "Item", Price = 10m, Consumers = ["Charlie"] }],
+            PaidBy = "Alice"
         };
 
         // Act
@@ -83,17 +85,40 @@ public class BillControllerTests
         {
             Title = "Test",
             People = ["Alice"],
-            Items = [new ItemRequest { Name = "Item", Price = 10m, Consumers = ["Alice"] }]
+            Items = [new ItemRequest { Name = "Item", Price = 10m, Consumers = ["Alice"] }],
+            PaidBy = "Alice"
         };
 
         _mockService
             .Setup(s => s.CalculateSplit(It.IsAny<BillRequest>()))
-            .Returns(new BillSplitResponse("Test", 10m, [new PersonSplit("Alice", 10m)]));
+            .Returns(new BillSplitResponse("Test", 10m, [new PersonSplit("Alice", 10m)], "Alice", []));
 
         // Act
         _sut.Split(request);
 
         // Assert — verify the service was invoked exactly once
         _mockService.Verify(s => s.CalculateSplit(It.IsAny<BillRequest>()), Times.Once);
+    }
+
+    [Fact]
+    public void Split_PaidByNotInPeopleList_Returns400()
+    {
+        // Arrange — "Charlie" paid but isn't one of the people splitting the bill
+        var request = new BillRequest
+        {
+            Title = "Bad Payer",
+            People = ["Alice", "Bob"],
+            Items = [new ItemRequest { Name = "Item", Price = 10m, Consumers = ["Alice", "Bob"] }],
+            PaidBy = "Charlie"
+        };
+
+        // Act
+        var actionResult = _sut.Split(request);
+
+        // Assert — 400 Bad Request, service should NOT be called
+        actionResult.Should().BeOfType<BadRequestObjectResult>()
+            .Which.StatusCode.Should().Be(400);
+
+        _mockService.Verify(s => s.CalculateSplit(It.IsAny<BillRequest>()), Times.Never);
     }
 }

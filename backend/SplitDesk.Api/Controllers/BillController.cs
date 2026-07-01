@@ -45,6 +45,15 @@ public class BillController : ControllerBase
             });
         }
 
+        // Extra business rule: whoever paid must be one of the people splitting the bill
+        if (!request.People.Contains(request.PaidBy))
+        {
+            return BadRequest(new
+            {
+                error = $"PaidBy '{request.PaidBy}' must be one of the people splitting the bill."
+            });
+        }
+
         var result = _billService.CalculateSplit(request);
         return Ok(result);
     }
