@@ -1,0 +1,8 @@
+**/node_modules/
+**/bin/
+**/obj/
+**/dist/
+.git/
+screenshots/
+TestRecipt.png
+testrecipt*.png

@@ -18,37 +18,22 @@ jobs:
       - run: dotnet test
         working-directory: backend
 
-  build-images:
-    name: Build Docker images
+  build-image:
+    name: Build Docker image
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t splitdesk-api ./backend
-      - run: docker build -t splitdesk-frontend ./frontend
+      - run: docker build -t splitdesk .
 
-  deploy-api:
-    name: Deploy API to Fly.io
-    needs: build-images
+  deploy:
+    name: Deploy to Fly.io
+    needs: build-image
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
-        working-directory: backend
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-  deploy-frontend:
-    name: Deploy frontend to Fly.io
-    needs: deploy-api
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
-        working-directory: frontend
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

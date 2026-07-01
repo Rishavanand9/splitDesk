@@ -1,17 +1,15 @@
-# Fly.io config for the API. The app must exist before this is used —
-# see docs/deployment-github-actions.md for the one-time setup.
-app = "splitdesk-api"
+# Fly.io config for the unified single-container deploy (root Dockerfile).
+# The app must exist before this is used — see docs/deployment-github-actions.md.
+app = "splitdesk"
 primary_region = "bom"
 
 [build]
 
 [env]
-  ASPNETCORE_ENVIRONMENT = "Production"
-  ASPNETCORE_URLS = "http://+:8082"
-  TESSDATA_PREFIX = "/usr/share/tesseract-ocr/5/tessdata"
+  PORT = "8080"
 
 [http_service]
-  internal_port = 8082
+  internal_port = 8080
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true

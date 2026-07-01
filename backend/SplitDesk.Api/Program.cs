@@ -54,6 +54,16 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.UseAuthorization();
 app.MapControllers();
 
+// Serves the built React app (copied into wwwroot by the root Dockerfile) for
+// single-container deployments where this API also hosts the frontend — no
+// nginx involved. Harmless no-op locally/in Docker Compose, where wwwroot is
+// empty and the frontend is served by its own nginx container instead.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+// Regex excludes "api/..." so an unmatched API route still 404s instead of
+// falling back to index.html.
+app.MapFallbackToFile("{*path:regex(^(?!api).*$)}", "index.html");
+
 app.Run();
 
 public partial class Program { }

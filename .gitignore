@@ -16,3 +16,6 @@ dist/
 .terraform/
 *.tfstate
 *.tfstate.*
+
+# Claude Code local state
+.claude/
