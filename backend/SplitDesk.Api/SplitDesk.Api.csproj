@@ -8,8 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Upscales/cleans up receipt photos before OCR — see BillScanService -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <!-- Swagger UI — AddSwaggerGen / UseSwagger / UseSwaggerUI -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Lets SplitDesk.Tests call internal parsing methods directly (e.g. BillScanService's
+         receipt-text parser) without exposing them as public API. -->
+    <InternalsVisibleTo Include="SplitDesk.Tests" />
   </ItemGroup>
 
 </Project>
