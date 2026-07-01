@@ -48,21 +48,32 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowReactApp");
 
+// Serves the built React app (copied into wwwroot by the root Dockerfile) for
+// single-container deployments where this API also hosts the frontend — no
+// nginx involved. Harmless no-op locally/in Docker Compose, where wwwroot is
+// empty and the frontend is served by its own nginx container instead.
+//
+// Must run before routing/MapFallbackToFile below — otherwise the SPA
+// fallback's catch-all route wins the endpoint match for every asset
+// request (e.g. /assets/index-XXXX.js) before this middleware ever gets a
+// chance to check whether a real file exists on disk, and the browser gets
+// index.html back for what should have been a JS module (MIME type error).
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Health check endpoint — used by Docker Compose healthcheck
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.UseAuthorization();
 app.MapControllers();
 
-// Serves the built React app (copied into wwwroot by the root Dockerfile) for
-// single-container deployments where this API also hosts the frontend — no
-// nginx involved. Harmless no-op locally/in Docker Compose, where wwwroot is
-// empty and the frontend is served by its own nginx container instead.
-app.UseDefaultFiles();
-app.UseStaticFiles();
-// Regex excludes "api/..." so an unmatched API route still 404s instead of
-// falling back to index.html.
-app.MapFallbackToFile("{*path:regex(^(?!api).*$)}", "index.html");
+// "nonfile" constraint: only matches when the path does NOT correspond to a
+// real file in wwwroot — without it this route wins ahead of static files
+// for every asset request (e.g. /assets/index-XXXX.js), because endpoint
+// selection happens independently of where UseStaticFiles sits in the
+// pipeline. Regex additionally excludes "api/..." so an unmatched API route
+// still 404s instead of falling back to index.html.
+app.MapFallbackToFile("{*path:nonfile:regex(^(?!api).*$)}", "index.html");
 
 app.Run();
 
