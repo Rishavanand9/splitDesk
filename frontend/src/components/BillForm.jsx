@@ -11,6 +11,7 @@ export default function BillForm({ onSubmit, loading }) {
   const [people, setPeople]       = useState([]);
   const [items, setItems]         = useState([]);
   const [paidBy, setPaidBy]       = useState('');
+  const [showErrors, setShowErrors] = useState(false);
 
   function addPerson(name) { setPeople((prev) => [...prev, name]); }
 
@@ -50,10 +51,24 @@ export default function BillForm({ onSubmit, loading }) {
     if (scanResult.tipPercent != null) setTipPercent(String(scanResult.tipPercent));
   }
 
-  const canSubmit = title.trim() && people.length > 0 && items.length > 0 &&
-    items.every((item) => (item.consumers ?? []).length > 0) && paidBy && !loading;
+  // Derived fresh from current state on every render — so once an invalid
+  // submit attempt reveals errors, they clear themselves the instant the
+  // user actually fixes the form, instead of lingering as a stale message.
+  const errors = [];
+  if (!title.trim()) errors.push('Enter a bill title.');
+  if (people.length === 0) errors.push('Add at least one person.');
+  if (items.length === 0) errors.push('Add at least one item.');
+  if (items.some((item) => (item.consumers ?? []).length === 0)) {
+    errors.push('Every item needs at least one person assigned to it.');
+  }
+  if (!paidBy) errors.push('Select who paid the bill.');
 
   function handleCalculate() {
+    if (errors.length > 0) {
+      setShowErrors(true);
+      return;
+    }
+    setShowErrors(false);
     onSubmit({
       title,
       taxPercent: parseFloat(taxPercent) || 0,
@@ -163,8 +178,16 @@ export default function BillForm({ onSubmit, loading }) {
         </div>
       )}
 
+      {showErrors && errors.length > 0 && (
+        <div className="error-banner">
+          <ul className="error-list">
+            {errors.map((message) => <li key={message}>{message}</li>)}
+          </ul>
+        </div>
+      )}
+
       <div className="sticky-footer">
-        <button className="btn-primary" onClick={handleCalculate} disabled={!canSubmit}>
+        <button className="btn-primary" onClick={handleCalculate} disabled={loading}>
           {loading ? 'Calculating...' : 'Calculate Split'}
         </button>
       </div>
