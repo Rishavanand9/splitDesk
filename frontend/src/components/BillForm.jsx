@@ -19,21 +19,39 @@ export default function BillForm({ onSubmit, loading }) {
     setPeople((prev) => prev.filter((_, i) => i !== index));
     setItems((prev) => prev.map((item) => ({
       ...item,
-      consumers: item.consumers.filter((c) => c !== removed),
+      consumers: (item.consumers ?? []).filter((c) => c !== removed),
     })));
     setPaidBy((prev) => (prev === removed ? '' : prev));
   }
 
   function addItem(item) { setItems((prev) => [...prev, item]); }
 
-  // Called by ScanUpload when OCR finishes — pre-fills detected values
+  function toggleItemConsumer(index, person) {
+    setItems((prev) => prev.map((item, i) => {
+      if (i !== index) return item;
+      const consumers = item.consumers ?? [];
+      return {
+        ...item,
+        consumers: consumers.includes(person)
+          ? consumers.filter((c) => c !== person)
+          : [...consumers, person],
+      };
+    }));
+  }
+
+  // Called by ScanUpload when OCR finishes — pre-fills detected values.
+  // Scanned items only have {name, price} — OCR can't know who consumed what —
+  // so default consumers to everyone already added; the user can uncheck as needed.
   function handleScanComplete(scanResult) {
-    if (scanResult.items?.length)    setItems(scanResult.items);
+    if (scanResult.items?.length) {
+      setItems(scanResult.items.map((item) => ({ ...item, consumers: [...people] })));
+    }
     if (scanResult.taxPercent != null) setTaxPercent(String(scanResult.taxPercent));
     if (scanResult.tipPercent != null) setTipPercent(String(scanResult.tipPercent));
   }
 
-  const canSubmit = title.trim() && people.length > 0 && items.length > 0 && paidBy && !loading;
+  const canSubmit = title.trim() && people.length > 0 && items.length > 0 &&
+    items.every((item) => (item.consumers ?? []).length > 0) && paidBy && !loading;
 
   function handleCalculate() {
     onSubmit({
@@ -109,16 +127,38 @@ export default function BillForm({ onSubmit, loading }) {
         <div className="card">
           <div className="card-title">{items.length} item{items.length > 1 ? 's' : ''}</div>
           <ul className="item-list">
-            {items.map((item, i) => (
-              <li key={i} className="item-row">
-                <div className="item-icon">{item.name.slice(0, 3).toUpperCase()}</div>
-                <div className="item-info">
-                  <div className="item-name">{item.name}</div>
-                  <div className="item-consumers">{item.consumers.join(' · ')}</div>
-                </div>
-                <div className="item-price">₹{item.price.toFixed(2)}</div>
-              </li>
-            ))}
+            {items.map((item, i) => {
+              const consumers = item.consumers ?? [];
+              return (
+                <li key={i} className="item-row">
+                  <div className="item-icon">{item.name.slice(0, 3).toUpperCase()}</div>
+                  <div className="item-info">
+                    <div className="item-name">{item.name}</div>
+                    {people.length > 0 ? (
+                      <div className="consumers-grid">
+                        {people.map((person) => {
+                          const checked = consumers.includes(person);
+                          return (
+                            <label key={person} className={`consumer-toggle ${checked ? 'checked' : ''}`}>
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleItemConsumer(i, person)}
+                              />
+                              <span className="consumer-dot" />
+                              {person}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="hint warning">Add people above to assign who had this.</p>
+                    )}
+                  </div>
+                  <div className="item-price">₹{item.price.toFixed(2)}</div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

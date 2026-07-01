@@ -344,11 +344,16 @@ html, body, #root {
 .item-list { list-style: none; }
 .item-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
   gap: 10px;
 }
+.item-row .item-icon { margin-top: 2px; }
+.item-row .item-price { margin-top: 2px; }
+.item-row .consumers-grid { margin-top: 6px; gap: 6px; }
+.item-row .consumer-toggle { padding: 3px 9px; font-size: 0.72rem; }
+.item-row .consumer-dot { width: 11px; height: 11px; }
 .item-row:last-child { border-bottom: none; }
 .item-icon {
   width: 34px;
@@ -367,7 +372,6 @@ html, body, #root {
 }
 .item-info { flex: 1; min-width: 0; }
 .item-name { font-size: 0.88rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.item-consumers { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
 .item-price { font-size: 0.95rem; font-weight: 700; color: var(--text); white-space: nowrap; }
 
 /* ── Scan upload area ────────────────────────────────────────────────────── */
